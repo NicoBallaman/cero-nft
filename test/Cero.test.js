@@ -1,19 +1,19 @@
 const { assert } = require('chai');
 
-const colorContract = artifacts.require('./Color.sol');
+const ceroContract = artifacts.require('./Cero.sol');
 
 require('chai')
 .use(require('chai-as-promised'))
 .should();
 
-contract('Color', (accounts)=>{
+contract('Cero', (accounts)=>{
 
-    const _contractName = "Color NFT";
-    const _contractSymbol = "CLR";
+    const _contractName = "Cero NFT";
+    const _contractSymbol = "CRO";
     let contract;
 
     before(async () => {
-        contract = await colorContract.deployed();
+        contract = await ceroContract.deployed();
     });
     describe('deployment', async () => {
         
@@ -47,13 +47,13 @@ contract('Color', (accounts)=>{
             assert.equal(event.tokenId.toNumber(), 0, 'tokenId is correct');
             assert.equal(event.from, '0x0000000000000000000000000000000000000000', 'from is correct');
             assert.equal(event.to, accounts[0], 'to is correct');
-            //failure: can't mint same color twice
+            //failure: can't mint same cero twice
             await contract.mint('#000000').should.be.rejected;
             
         });
     });
     describe('indexing', async () => {
-        it('lists colors', async () => {
+        it('lists ceros', async () => {
             let expected = ['#000000', '#000001', '#000002', '#000003']
             await contract.mint('#000001');
             await contract.mint('#000002');
@@ -61,8 +61,8 @@ contract('Color', (accounts)=>{
             const totalSupply = await contract.totalSupply();
             let result= [];
             for (let i = 0; i < totalSupply; i++) {
-                const color = await contract.colors(i);
-                result.push(color);   
+                const cero = await contract.ceros(i);
+                result.push(cero);   
             }
             assert.equal(result.join(','), expected.join(','))
         });
