@@ -2,13 +2,13 @@
 pragma solidity >=0.8.0;
 
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 
-contract Cero is ERC721Enumerable, ERC721URIStorage, Ownable {
+contract Cero is ERC721, ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
     using SafeMath for uint256;
 
@@ -37,9 +37,6 @@ contract Cero is ERC721Enumerable, ERC721URIStorage, Ownable {
     mapping(uint256 => uint256) private _cerosDna;
     mapping(address => uint256) private _whiteList;
     mapping(address => uint256) private _airdrops;
-    
-
-
 
     event Minted(address minter, uint256 amount);
     event BalanceWithdrawed(address recipient, uint256 value);
@@ -193,11 +190,11 @@ contract Cero is ERC721Enumerable, ERC721URIStorage, Ownable {
         super._burn(tokenId);
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override(ERC721, ERC721Enumerable) {
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override(ERC721) {
         super._beforeTokenTransfer(from, to, tokenId);
     }
     
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC721Enumerable) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }

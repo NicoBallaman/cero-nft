@@ -15,7 +15,7 @@ contract('Cero', (accounts)=>{
     before(async () => {
         contract = await ceroContract.deployed();
     });
-    describe('constructor', async () => {
+    describe('deployment', async () => {
         
         it('deploys syccessfully', async () => {
             const contractAddress = contract.address;
@@ -35,13 +35,8 @@ contract('Cero', (accounts)=>{
             assert.equal(contractSymbol, _contractSymbol);
         });
         
-        it('has a symbol', async () => {
-            const contractSymbol = await contract.symbol();
-            assert.equal(contractSymbol, _contractSymbol);
-        });
-        
     });
-    /*
+    
     describe('minting', async () => {
         it('creates a new token', async () => {
             const result = await contract.mint('#000000');
@@ -72,5 +67,4 @@ contract('Cero', (accounts)=>{
             assert.equal(result.join(','), expected.join(','))
         });
     });
-    */
 });
