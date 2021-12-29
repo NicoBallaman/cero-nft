@@ -35,9 +35,23 @@ contract('Cero', (accounts)=>{
             assert.equal(contractSymbol, _contractSymbol);
         });
         
-        it('has a symbol', async () => {
-            const contractSymbol = await contract.symbol();
-            assert.equal(contractSymbol, _contractSymbol);
+    });
+
+    describe('mintPrice', async () => {
+        
+        it('default mint price is equal to 0.05 ETH', async () => {
+            const currentMintPrice = await contract.mintPrice();
+            const defaultMintPrice = web3.utils.toWei('0.05', "ether");
+            assert.equal(currentMintPrice, defaultMintPrice);
+        });
+        
+        it('update mint price to 0.07 ETH', async () => {
+            const currentMintPrice = await contract.mintPrice();
+            const newMintPrice = web3.utils.toWei('0.07', "ether");
+            await contract.updateMintPrice(newMintPrice);
+            const updatedMintPrice = await contract.mintPrice();
+            assert.notEqual(currentMintPrice, newMintPrice);
+            assert.equal(updatedMintPrice, newMintPrice);
         });
         
     });

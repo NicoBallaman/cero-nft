@@ -30,7 +30,7 @@ contract Cero is ERC721, ERC721URIStorage, Ownable {
     address private _owner;
     string private _tokenUriBase;
     uint256 public constant MAX_CEROS = 9999;
-    uint256 private CERO_PRICE = 5E16; // 0.05 ETH
+    uint256 private CERO_PRICE_IN_WEI = 5E16; // 0.05 ETH
     uint256 public totalMinted = 0;
     uint256 public availableTokensMint = 0;
 
@@ -47,8 +47,12 @@ contract Cero is ERC721, ERC721URIStorage, Ownable {
         _state = State.SetUp;
     }
 
-    function updateMintPrice(uint256 __price) public onlyOwner {
-        CERO_PRICE = __price;
+    function updateMintPrice(uint256 __price) external onlyOwner {
+        CERO_PRICE_IN_WEI = __price;
+    }
+
+    function mintPrice() external view returns (uint256) {
+        return CERO_PRICE_IN_WEI;
     }
 
     function addQuantityToMint(uint256 __quantity) public onlyOwner {
@@ -135,20 +139,20 @@ contract Cero is ERC721, ERC721URIStorage, Ownable {
     function presaleMint() external payable {
         require(_state == State.Presale, "Presale is not active.");
         require(_whiteList[msg.sender] > 0, "The wallet address is not allowed to mint Ceros.");
-        require(msg.value >= CERO_PRICE, "Ether value sent is incorrect.");
+        require(msg.value >= CERO_PRICE_IN_WEI, "Ether value sent is incorrect.");
         mint();
         _whiteList[msg.sender] = _whiteList[msg.sender].sub(1);
     }
 
     function ownerMint() external payable onlyOwner {
         require(_state != State.SoldOut, "Mint is not available.");
-        require(msg.value >= CERO_PRICE, "Ether value sent is incorrect.");
+        require(msg.value >= CERO_PRICE_IN_WEI, "Ether value sent is incorrect.");
         mint();
     }
 
     function saleMint() external payable {
         require(_state == State.Sale, "Sale is not active.");
-        require(msg.value >= CERO_PRICE, "Ether value sent is incorrect.");
+        require(msg.value >= CERO_PRICE_IN_WEI, "Ether value sent is incorrect.");
         mint();
     }
 
