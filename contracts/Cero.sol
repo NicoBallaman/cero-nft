@@ -27,8 +27,7 @@ contract Cero is ERC721, ERC721URIStorage, Ownable {
 
     Counters.Counter private _tokenIds;
     State private _state;
-    address private _owner;
-    string private _tokenUriBase;
+    string private _tokenUriBase = "";
     uint256 public constant MAX_CEROS = 9999;
     uint256 private CERO_PRICE_IN_WEI = 5E16; // 0.05 ETH
     uint256 public totalMinted = 0;
@@ -40,10 +39,10 @@ contract Cero is ERC721, ERC721URIStorage, Ownable {
 
     event Minted(address minter, uint256 amount);
     event BalanceWithdrawed(address recipient, uint256 value);
+    event StateUpdated(State prevoius, State current);
 
 
     constructor() ERC721(_name, _symbol) {
-        _owner = msg.sender;
         _state = State.SetUp;
     }
 
@@ -56,38 +55,39 @@ contract Cero is ERC721, ERC721URIStorage, Ownable {
     }
 
     function addQuantityToMint(uint256 __quantity) public onlyOwner {
-        availableTokensMint = __quantity;
-    }
-
-    function updateOwner(address __owner) public onlyOwner {
-        _owner = __owner;
-    }
-
-    function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
-        return string(abi.encodePacked(baseTokenURI(), Strings.toString(tokenId)));
+        availableTokensMint = availableTokensMint.add(__quantity);
     }
 
     function baseTokenURI() public view virtual returns (string memory) {
         return _tokenUriBase;
     }
 
-    function setTokenURI(string memory tokenUriBase_) public onlyOwner {
+    function setBaseTokenURI(string memory tokenUriBase_) public onlyOwner {
         _tokenUriBase = tokenUriBase_;
+    
+    }
+
+    function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
+        return string(abi.encodePacked(baseTokenURI(), Strings.toString(tokenId)));
     }
 
     function setStateToSetup() public onlyOwner {
+        emit StateUpdated(_state, State.SetUp);
         _state = State.SetUp;
     }
     
     function startPresale() public onlyOwner {
+        emit StateUpdated(_state, State.Presale);
         _state = State.Presale;
     }
 
     function setStateToSale() public onlyOwner {
+        emit StateUpdated(_state, State.Sale);
         _state = State.Sale;
     }
     
     function setStateToSoldOut() public onlyOwner {
+        emit StateUpdated(_state, State.SoldOut);
         _state = State.SoldOut;
     }
 

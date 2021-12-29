@@ -55,6 +55,53 @@ contract('Cero', (accounts)=>{
         });
         
     });
+    describe('addQuantityToMint', async () => {
+        
+        it('default availableTokensMint is equal to 0', async () => {
+            const currentTokens = await contract.availableTokensMint();
+            assert.equal(currentTokens, 0);
+        });
+
+        it('availableTokensMint is equal to 55 when addQuantityToMint(55) is excecuted succesfully', async () => {
+            const increaseQuantity = 55;
+            const currentTokens = await contract.availableTokensMint();
+            await contract.addQuantityToMint(increaseQuantity);
+            const updatedTokens = await contract.availableTokensMint();
+            assert.equal(updatedTokens, increaseQuantity);
+        });
+
+        it('availableTokensMint increase when addQuantityToMint is excecuted succesfully', async () => {
+            const increaseQuantity = 5000;
+            const currentTokens = await contract.availableTokensMint();
+            await contract.addQuantityToMint(increaseQuantity);
+            const updatedTokens = await contract.availableTokensMint();
+            assert.isTrue(currentTokens >= updatedTokens);
+            assert.isTrue(updatedTokens >= increaseQuantity);
+        });
+        
+    });
+    describe('setBaseTokenURI', async () => {
+        
+        it('default baseTokenUri is empty', async () => {
+            const defaultBaseTokenURI = await contract.baseTokenURI();
+            assert.equal(defaultBaseTokenURI, '');
+        });
+        it('update baseTokenUri to https://ethereum.org/', async () => {
+            const currentBaseTokenURI = await contract.baseTokenURI();
+            const newBaseTokenURI = 'https://ethereum.org/';
+            await contract.setBaseTokenURI(newBaseTokenURI);
+            const updatedBaseTokenURI = await contract.baseTokenURI();
+            assert.notEqual(currentBaseTokenURI, newBaseTokenURI);
+            assert.equal(updatedBaseTokenURI, newBaseTokenURI);
+        });
+        const tokenId = 88;
+        it(`tokenURI for ${tokenId} tokenId is equal to baseTokenUri + tokenId`, async () => {
+            const currentBaseTokenURI = await contract.baseTokenURI();
+            const tokenUri = currentBaseTokenURI + tokenId;
+            const fullTokenURI = await contract.tokenURI(tokenId);
+            assert.equal(tokenUri, fullTokenURI);
+        });
+    });
     /*
     describe('minting', async () => {
         it('creates a new token', async () => {
