@@ -72,28 +72,33 @@ contract Cero is ERC721, ERC721URIStorage, Ownable {
     }
 
     function setStateToSetup() public onlyOwner {
-        emit StateUpdated(_state, State.SetUp);
+        State prev = _state;
         _state = State.SetUp;
+        emit StateUpdated(prev, _state);
     }
     
-    function startPresale() public onlyOwner {
-        emit StateUpdated(_state, State.Presale);
+    function setStateToPresale() public onlyOwner {
+        State prev = _state;
         _state = State.Presale;
+        emit StateUpdated(prev, _state);
     }
 
     function setStateToSale() public onlyOwner {
-        emit StateUpdated(_state, State.Sale);
+        State prev = _state;
         _state = State.Sale;
+        emit StateUpdated(prev, _state);
     }
     
     function setStateToSoldOut() public onlyOwner {
-        emit StateUpdated(_state, State.SoldOut);
+        State prev = _state;
         _state = State.SoldOut;
+        emit StateUpdated(prev, _state);
     }
 
     function addToPresaleList(address[] calldata _addresses, uint quantity) external onlyOwner {
+        require(_state == State.SetUp || _state == State.Presale, "Presale is not active.");
         for (uint256 ind = 0; ind < _addresses.length; ind++) {
-            require(_addresses[ind] != address(0), "Message: Can't add a zero address");
+            require(_addresses[ind] != address(0), "Can't add a zero address");
             _whiteList[_addresses[ind]] = _whiteList[_addresses[ind]].add(quantity);
         }
     }
@@ -104,14 +109,14 @@ contract Cero is ERC721, ERC721URIStorage, Ownable {
 
     function removeFromPresaleList(address[] calldata _addresses) external onlyOwner {
         for (uint256 ind = 0; ind < _addresses.length; ind++) {
-            require(_addresses[ind] != address(0), "Message: Can't remove a zero address");
+            require(_addresses[ind] != address(0), "Can't remove a zero address");
             _whiteList[_addresses[ind]] = 0;
         }
     }
 
     function addAirdrop(address[] calldata _addresses, uint quantity) external onlyOwner {
         for (uint256 ind = 0; ind < _addresses.length; ind++) {
-            require(_addresses[ind] != address(0), "Message: Can't add a zero address");
+            require(_addresses[ind] != address(0), "Can't add a zero address");
             _airdrops[_addresses[ind]] = _airdrops[_addresses[ind]].add(quantity);
         }
     }
@@ -122,7 +127,7 @@ contract Cero is ERC721, ERC721URIStorage, Ownable {
 
     function removeAirdrop(address[] calldata _addresses) external onlyOwner {
         for (uint256 ind = 0; ind < _addresses.length; ind++) {
-            require(_addresses[ind] != address(0), "Message: Can't remove a zero address");
+            require(_addresses[ind] != address(0), "Can't remove a zero address");
             _airdrops[_addresses[ind]] = 0;
         }
     }
