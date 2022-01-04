@@ -9,6 +9,7 @@ require('chai').use(require('chai-as-promised')).should();
 contract('Cero', (accounts)=>{
 
     let contract;
+    const _zeroAddress = '0x0000000000000000000000000000000000000000';
     const _setupState = 0;
     const _presaleState = 1;
     const _saleState = 2;
@@ -149,7 +150,6 @@ contract('Cero', (accounts)=>{
     
     describe('presaleList ', async () => {
 
-        const _zeroAddress = '0x0000000000000000000000000000000000000000';
         const _qunatityPresale = 10;
 
         it('addToPresaleList address when state is Presale', async () => {
@@ -260,47 +260,175 @@ contract('Cero', (accounts)=>{
             const currStatus0 = await contract.isOnPresaleList(accountNotExist2);
             const currStatus1 = await contract.isOnPresaleList(accountNotExist1);
             const currStatus2 = await contract.isOnPresaleList(_zeroAddress);
-            assert.isTrue(prevStatus0);
-            assert.isFalse(prevStatus1);
-            assert.isFalse(prevStatus2);
-            assert.isTrue(currStatus0);
-            assert.isFalse(currStatus1);
-            assert.isFalse(currStatus2);
+            assert.isTrue(prevStatus0 == currStatus0);
+            assert.isTrue(prevStatus1 == currStatus1);
+            assert.isTrue(prevStatus2 == currStatus2);
         });
 
 
 
     });
-    /*
-    describe('minting', async () => {
-        it('creates a new token', async () => {
-            const result = await contract.mint('#000000');
-            const totalSupply = await contract.totalSupply();
-            //success
-            assert.equal(totalSupply, 1);
-            const event = result.logs[0].args;
-            assert.equal(event.tokenId.toNumber(), 0, 'tokenId is correct');
-            assert.equal(event.from, '0x0000000000000000000000000000000000000000', 'from is correct');
-            assert.equal(event.to, accounts[0], 'to is correct');
-            //failure: can't mint same cero twice
-            await contract.mint('#000000').should.be.rejected;
+
+    describe('airdrop ', async () => {
+
+        const _qunatityAirdrop = 20;
+
+        it('addAirdrop is excecuted succesfully', async () => {
+            const account = accounts[1];
+            await contract.addAirdrop([account], _qunatityAirdrop);
+            const result = await contract.hasAirdrop(account);
+            assert.isTrue(result);
+        });
+        
+        it('addAirdrop is excecuted succesfully with an list of address', async () => {
+            const accountList = [accounts[2], accounts[3], accounts[5]];
+            await contract.addAirdrop(accountList, _qunatityAirdrop);
+            const resultAccount0 = await contract.hasAirdrop(accountList[0]);
+            const resultAccount1 = await contract.hasAirdrop(accountList[1]);
+            const resultAccount2 = await contract.hasAirdrop(accountList[2]);
+            assert.isTrue(resultAccount0 && resultAccount1 && resultAccount2);
+        });
+        
+        it('addAirdrop don\'t add address when list contain an zero address', async () => {
+            const accountList = [accounts[4], _zeroAddress];
+            await exceptionsModule.catchRevert(contract.addAirdrop(accountList, _qunatityAirdrop));
+            const resultAccount0 = await contract.hasAirdrop(accountList[0]);
+            const resultAccount1 = await contract.hasAirdrop(accountList[1]);
+            assert.isFalse(resultAccount0 || resultAccount1);
+        });
+        
+        it('addAirdrop revert when address is zero', async () => {
+            await exceptionsModule.catchRevert(contract.addAirdrop([_zeroAddress], _qunatityAirdrop));
+            const result = await contract.hasAirdrop(_zeroAddress);
+            assert.isFalse(result);
+        });
+
+        it('removeAirdrop an existing address in airdropList', async () => {
+            const prevStatus = await contract.hasAirdrop(accounts[1]);
+            await contract.removeAirdrop([accounts[1]]);
+            const currStatus = await contract.hasAirdrop(accounts[1]);
+            assert.isTrue(prevStatus);
+            assert.isFalse(currStatus);
+        });
+        
+        
+        it('removeAirdrop an existing list of address in airdropList', async () => {
+            const accountExist1 = accounts[2];
+            const accountExist2 = accounts[3];
+            const accountList = [accountExist1, accountExist2];
+            const prevStatus2 = await contract.hasAirdrop(accountExist1);
+            const prevStatus3 = await contract.hasAirdrop(accountExist2);
+            await contract.removeAirdrop(accountList);
+            const currStatus2 = await contract.hasAirdrop(accountExist1);
+            const currStatus3 = await contract.hasAirdrop(accountExist2);
+            assert.isTrue(prevStatus2 && prevStatus3);
+            assert.isFalse(currStatus2 || currStatus3);
+        });
+        
+        it('removeAirdrop an not existing address in airdropList', async () => {
+            const accountNotExist = accounts[4];
+            const prevStatus = await contract.hasAirdrop(accountNotExist);
+            await contract.removeAirdrop([accountNotExist]);
+            const currStatus = await contract.hasAirdrop(accountNotExist);
+            assert.isFalse(prevStatus);
+            assert.isFalse(currStatus);
+        });
+        
+        it('removeAirdrop an list of address with zero address', async () => {
+            const accountExist = accounts[5];
+            const accountNotExist = accounts[6];
+            const accountList = [accountExist, accountNotExist, _zeroAddress];
+            const prevStatus0 = await contract.hasAirdrop(accountExist);
+            const prevStatus1 = await contract.hasAirdrop(accountNotExist);
+            const prevStatus2 = await contract.hasAirdrop(_zeroAddress);
+            await exceptionsModule.catchRevert(contract.removeAirdrop(accountList));
+            const currStatus0 = await contract.hasAirdrop(accountExist);
+            const currStatus1 = await contract.hasAirdrop(accountNotExist);
+            const currStatus2 = await contract.hasAirdrop(_zeroAddress);
+            assert.isTrue(prevStatus0 == currStatus0);
+            assert.isTrue(prevStatus1 == currStatus1);
+            assert.isTrue(prevStatus2 == currStatus2);
+        });
+        
+        it('claimAirdrop an address in airdrop list', async () => {
+            const accountExist = accounts[7];
+            const resultState = await contract.setStateToSale();
+            const eventStateUpdated = resultState.logs[0].args;
+
+            await contract.addAirdrop([accountExist], _qunatityAirdrop);
+            const hasAirdrop = await contract.hasAirdrop(accountExist)
+            await contract.claimAirdrop({from: accountExist});
+            const hasAirdropAfter = await contract.hasAirdrop(accountExist);
+            const balanceAccount = await contract.balanceOf(accountExist);
+
             
+            assert.isTrue(eventStateUpdated[1] != _soldOutState);
+            assert.isTrue(hasAirdrop);
+            assert.isFalse(hasAirdropAfter);
+            assert.isTrue(balanceAccount == _qunatityAirdrop);
         });
-    });
-    describe('indexing', async () => {
-        it('lists ceros', async () => {
-            let expected = ['#000000', '#000001', '#000002', '#000003']
-            await contract.mint('#000001');
-            await contract.mint('#000002');
-            await contract.mint('#000003');
-            const totalSupply = await contract.totalSupply();
-            let result= [];
-            for (let i = 0; i < totalSupply; i++) {
-                const cero = await contract.ceros(i);
-                result.push(cero);   
-            }
-            assert.equal(result.join(','), expected.join(','))
+
+        it('claimAirdrop an don\'t exist address in airdrop list', async () => {
+            const accountNotExist = accounts[1];
+            const resultState = await contract.setStateToSale();
+            const eventStateUpdated = resultState.logs[0].args;
+
+            const hasAirdrop = await contract.hasAirdrop(accountNotExist)
+            await exceptionsModule.catchRevert(contract.claimAirdrop({from: accountNotExist}));
+            const hasAirdropAfter = await contract.hasAirdrop(accountNotExist);
+            const balanceAccount = await contract.balanceOf(accountNotExist);
+
+            
+            assert.isTrue(eventStateUpdated[1] != _soldOutState);
+            assert.isFalse(hasAirdrop);
+            assert.isFalse(hasAirdropAfter);
+            assert.isTrue(balanceAccount == 0);
         });
+
+        it('claimAirdrop is available on Setup state', async () => {
+            const account = accounts[1];
+            const result = await contract.setStateToSetup();
+            const eventStateUpdated = result.logs[0].args;
+
+            await contract.addAirdrop([account], _qunatityAirdrop);
+            await contract.claimAirdrop({from: account});
+
+            assert.equal(eventStateUpdated[1], _setupState);
+        });
+        
+        it('claimAirdrop is available on Presale state', async () => {
+            const account = accounts[1];
+            const result = await contract.setStateToPresale();
+            const eventStateUpdated = result.logs[0].args;
+
+            await contract.addAirdrop([account], _qunatityAirdrop);
+            await contract.claimAirdrop({from: account});
+
+            assert.equal(eventStateUpdated[1], _presaleState);
+        });
+
+        it('claimAirdrop is available on Sale state', async () => {
+            const account = accounts[1];
+            const result = await contract.setStateToSale();
+            const eventStateUpdated = result.logs[0].args;
+
+            await contract.addAirdrop([account], _qunatityAirdrop);
+            await contract.claimAirdrop({from: account});
+
+            assert.equal(eventStateUpdated[1], _saleState);
+        });
+
+        it('claimAirdrop is\'t available on SoldOut state', async () => {
+            const account = accounts[1];
+            const result = await contract.setStateToSoldOut();
+            const eventStateUpdated = result.logs[0].args;
+
+            await contract.addAirdrop([account], _qunatityAirdrop);
+            await exceptionsModule.catchRevert(contract.claimAirdrop({from: account}));
+
+            assert.equal(eventStateUpdated[1], _soldOutState);
+        });
+
     });
-    */
+
 });
