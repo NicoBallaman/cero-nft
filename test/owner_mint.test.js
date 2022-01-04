@@ -22,7 +22,7 @@ contract('Cero', (accounts)=>{
    
     describe('ownerMint', async () => {
 
-        it('ownerMint should revert when from account is not the owner', async () => {
+        it('ownerMint should revert when caller account is not the owner', async () => {
             await exceptionsModule.catchRevert(contract.ownerMint({from: accountNotOwner}));
         });
 

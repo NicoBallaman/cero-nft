@@ -37,7 +37,7 @@ contract('Cero', (accounts)=>{
             assert.isTrue(resultAccount0 && resultAccount1 && resultAccount2);
         });
         
-        it('addAirdrop don\'t add address when list contain an zero address', async () => {
+        it('addAirdrop don\'t should add address when list contain an zero address', async () => {
             const accountList = [accounts[4], utils._zeroAddress];
             await exceptionsModule.catchRevert(contract.addAirdrop(accountList, _qunatityAirdrop));
             const resultAccount0 = await contract.hasAirdrop(accountList[0]);
@@ -45,7 +45,7 @@ contract('Cero', (accounts)=>{
             assert.isFalse(resultAccount0 || resultAccount1);
         });
         
-        it('addAirdrop revert when address is zero', async () => {
+        it('addAirdrop should revert when address is zero', async () => {
             await exceptionsModule.catchRevert(contract.addAirdrop([utils._zeroAddress], _qunatityAirdrop));
             const result = await contract.hasAirdrop(utils._zeroAddress);
             assert.isFalse(result);
@@ -97,6 +97,7 @@ contract('Cero', (accounts)=>{
             assert.equal(prevStatus1, currStatus1);
             assert.equal(prevStatus2, currStatus2);
         });
+        
         it('claimAirdrop an address in airdrop list', async () => {
             const accountExist = accounts[7];
             const resultState = await contract.setStateToSale();
@@ -115,7 +116,7 @@ contract('Cero', (accounts)=>{
             assert.equal(balanceAccount, _qunatityAirdrop);
         });
         
-        it('claimAirdrop an don\'t exist address in airdrop list', async () => {
+        it('claimAirdrop an not exist address in airdrop list', async () => {
             const accountNotExist = accounts[1];
             const resultState = await contract.setStateToSale();
             const eventStateUpdated = resultState.logs[0].args;
@@ -165,7 +166,7 @@ contract('Cero', (accounts)=>{
             assert.equal(eventStateUpdated[1], utils._saleState);
         });
         
-        it('claimAirdrop is\'nt available on SoldOut state', async () => {
+        it('claimAirdrop isn\'t available on SoldOut state', async () => {
             const account = accounts[1];
             const result = await contract.setStateToSoldOut();
             const eventStateUpdated = result.logs[0].args;

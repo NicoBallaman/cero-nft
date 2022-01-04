@@ -12,6 +12,7 @@ contract('Cero', (accounts)=>{
 
     before(async () => {
         contract = await ceroContract.deployed();
+        await contract.setStateToSetup();
     });
 
     describe('setState', async () => {

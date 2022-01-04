@@ -24,28 +24,28 @@ contract('Cero', (accounts)=>{
    
     describe('presaleMint', async () => {
 
-        it('presaleMint is\'n available on Setup state', async () => {
+        it('presaleMint isn\'n available on Setup state', async () => {
             const result = await contract.setStateToSetup();
             const eventStateUpdated = result.logs[0].args;
             await exceptionsModule.catchRevert(contract.presaleMint({from: accountInWhiteList}));
             assert.equal(eventStateUpdated[1], utils._setupState);
         });
 
-        it('presaleMint is\'nt available on Sale state', async () => {
+        it('presaleMint isn\'t available on Sale state', async () => {
             const result = await contract.setStateToSale();
             const eventStateUpdated = result.logs[0].args;
             await exceptionsModule.catchRevert(contract.presaleMint({from: accountInWhiteList}));
             assert.equal(eventStateUpdated[1], utils._saleState);
         });
 
-        it('presaleMint is\'nt available on SoldOut state', async () => {
+        it('presaleMint isn\'t available on SoldOut state', async () => {
             const result = await contract.setStateToSoldOut();
             const eventStateUpdated = result.logs[0].args;
             await exceptionsModule.catchRevert(contract.presaleMint({from: accountInWhiteList}));
             assert.equal(eventStateUpdated[1], utils._soldOutState);
         });
 
-        it('presaleMint should revert when account is\'nt in whiteList', async () => {
+        it('presaleMint should revert when account isn\'t in whiteList', async () => {
             const result = await contract.setStateToPresale();
             const eventStateUpdated = result.logs[0].args;
             const isOnPresaleList = await contract.isOnPresaleList(accountNotWhiteList);

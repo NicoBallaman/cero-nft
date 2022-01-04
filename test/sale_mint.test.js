@@ -17,8 +17,6 @@ contract('Cero', (accounts)=>{
         await contract.addQuantityToMint(_quantityToMint);
     });
 
-    
-   
     describe('saleMint', async () => {
 
         it('saleMint isn\'t available on SoldOut state', async () => {
@@ -84,7 +82,7 @@ contract('Cero', (accounts)=>{
             assert.isTrue(currentBalance < newBalance);
             assert.equal(eventStateUpdated[1], utils._saleState);
         });
-        
+
     });
 
 });
