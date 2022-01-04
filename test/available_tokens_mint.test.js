@@ -17,6 +17,7 @@ contract('Cero', (accounts)=>{
     });
 
     describe('availableTokensMint', async () => {
+        
         it(`default availableTokensMint is equal to ${_defaultAvailableTokensMint}`, async () => {
             const currentTokens = await contract.availableTokensMint();
             assert.equal(currentTokens, _defaultAvailableTokensMint);

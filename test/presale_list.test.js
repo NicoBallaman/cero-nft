@@ -18,7 +18,6 @@ contract('Cero', (accounts)=>{
 
     describe('presaleList', async () => {
 
-
         it('addToPresaleList address when state is Presale', async () => {
             const resultState = await contract.setStateToPresale();
             const eventState = resultState.logs[0].args[1];
