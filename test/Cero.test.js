@@ -14,6 +14,7 @@ contract('Cero', (accounts)=>{
     const _presaleState = 1;
     const _saleState = 2;
     const _soldOutState = 3;
+    const _updateMintPrice = '0.07';
 
     before(async () => {
         contract = await ceroContract.deployed();
@@ -43,8 +44,8 @@ contract('Cero', (accounts)=>{
     });
 
     describe('mintPrice', async () => {
+
         const _defaultMintPrice = '0.05';
-        const _updateMintPrice = '0.07';
 
         it(`default mint price is equal to ${_defaultMintPrice} ETH`, async () => {
             const currentMintPrice = await contract.mintPrice();
@@ -175,7 +176,7 @@ contract('Cero', (accounts)=>{
         it('addToPresaleList an list of address', async () => {
             const resultState = await contract.setStateToSetup();
             const eventState = resultState.logs[0].args[1];
-            const accountList = [accounts[2], accounts[3], accounts[6]];
+            const accountList = [accounts[2], accounts[3], accounts[6], accounts[7]];
             await contract.addToPresaleList(accountList, _qunatityPresale);
             const resultAccount0 = await contract.isOnPresaleList(accountList[0]);
             const resultAccount1 = await contract.isOnPresaleList(accountList[1]);
@@ -260,16 +261,16 @@ contract('Cero', (accounts)=>{
             const currStatus0 = await contract.isOnPresaleList(accountNotExist2);
             const currStatus1 = await contract.isOnPresaleList(accountNotExist1);
             const currStatus2 = await contract.isOnPresaleList(_zeroAddress);
-            assert.isTrue(prevStatus0 == currStatus0);
-            assert.isTrue(prevStatus1 == currStatus1);
-            assert.isTrue(prevStatus2 == currStatus2);
+            assert.equal(prevStatus0, currStatus0);
+            assert.equal(prevStatus1, currStatus1);
+            assert.equal(prevStatus2, currStatus2);
         });
 
 
 
     });
 
-    describe('airdrop ', async () => {
+    describe('airdrop', async () => {
 
         const _qunatityAirdrop = 20;
 
@@ -345,9 +346,9 @@ contract('Cero', (accounts)=>{
             const currStatus0 = await contract.hasAirdrop(accountExist);
             const currStatus1 = await contract.hasAirdrop(accountNotExist);
             const currStatus2 = await contract.hasAirdrop(_zeroAddress);
-            assert.isTrue(prevStatus0 == currStatus0);
-            assert.isTrue(prevStatus1 == currStatus1);
-            assert.isTrue(prevStatus2 == currStatus2);
+            assert.equal(prevStatus0, currStatus0);
+            assert.equal(prevStatus1, currStatus1);
+            assert.equal(prevStatus2, currStatus2);
         });
         
         it('claimAirdrop an address in airdrop list', async () => {
@@ -365,7 +366,7 @@ contract('Cero', (accounts)=>{
             assert.isTrue(eventStateUpdated[1] != _soldOutState);
             assert.isTrue(hasAirdrop);
             assert.isFalse(hasAirdropAfter);
-            assert.isTrue(balanceAccount == _qunatityAirdrop);
+            assert.equal(balanceAccount, _qunatityAirdrop);
         });
 
         it('claimAirdrop an don\'t exist address in airdrop list', async () => {
@@ -382,7 +383,7 @@ contract('Cero', (accounts)=>{
             assert.isTrue(eventStateUpdated[1] != _soldOutState);
             assert.isFalse(hasAirdrop);
             assert.isFalse(hasAirdropAfter);
-            assert.isTrue(balanceAccount == 0);
+            assert.equal(balanceAccount, 0);
         });
 
         it('claimAirdrop is available on Setup state', async () => {
@@ -418,7 +419,7 @@ contract('Cero', (accounts)=>{
             assert.equal(eventStateUpdated[1], _saleState);
         });
 
-        it('claimAirdrop is\'t available on SoldOut state', async () => {
+        it('claimAirdrop is\'nt available on SoldOut state', async () => {
             const account = accounts[1];
             const result = await contract.setStateToSoldOut();
             const eventStateUpdated = result.logs[0].args;
@@ -429,6 +430,115 @@ contract('Cero', (accounts)=>{
             assert.equal(eventStateUpdated[1], _soldOutState);
         });
 
+    });
+
+    describe('presaleMint', async () => {
+
+        it('presaleMint is\'n available on Setup state', async () => {
+            const account = accounts[1];
+            const result = await contract.setStateToSetup();
+            const eventStateUpdated = result.logs[0].args;
+            await exceptionsModule.catchRevert(contract.presaleMint({from: account}));
+            assert.equal(eventStateUpdated[1], _setupState);
+        });
+
+        it('presaleMint is\'nt available on Sale state', async () => {
+            const account = accounts[1];
+            const result = await contract.setStateToSale();
+            const eventStateUpdated = result.logs[0].args;
+            await exceptionsModule.catchRevert(contract.presaleMint({from: account}));
+            assert.equal(eventStateUpdated[1], _saleState);
+        });
+
+        it('presaleMint is\'nt available on SoldOut state', async () => {
+            const account = accounts[1];
+            const result = await contract.setStateToSoldOut();
+            const eventStateUpdated = result.logs[0].args;
+            await exceptionsModule.catchRevert(contract.presaleMint({from: account}));
+            assert.equal(eventStateUpdated[1], _soldOutState);
+        });
+
+        it('presaleMint should revert when account is\'nt in whiteList', async () => {
+            const account = accounts[1];
+            const result = await contract.setStateToPresale();
+            const eventStateUpdated = result.logs[0].args;
+            const isOnPresaleList = await contract.isOnPresaleList(account);
+
+            await exceptionsModule.catchRevert(contract.presaleMint({from: account}));
+
+            assert.equal(eventStateUpdated[1], _presaleState);
+            assert.isFalse(isOnPresaleList);
+        });
+
+        it('presaleMint should revert when ETH sent is 0', async () => {
+            const account = accounts[7];
+            const result = await contract.setStateToPresale();
+            const eventStateUpdated = result.logs[0].args;
+            const isOnPresaleList = await contract.isOnPresaleList(account);
+
+            await exceptionsModule.catchRevert(contract.presaleMint({from: account}));
+
+            assert.equal(eventStateUpdated[1], _presaleState);
+            assert.isTrue(isOnPresaleList);
+        });
+        it('presaleMint should revert when ETH sent is less than CERO_PRICE', async () => {
+            const account = accounts[7];
+            const result = await contract.setStateToPresale();
+            const eventStateUpdated = result.logs[0].args;
+            const isOnPresaleList = await contract.isOnPresaleList(account);
+            const currentMintPrice = web3.utils.toWei(_updateMintPrice, "ether");
+            const lessMintPrice = parseInt(currentMintPrice) - 10;
+            
+            await exceptionsModule.catchRevert(contract.presaleMint({from: account, value: lessMintPrice}));
+
+            assert.equal(eventStateUpdated[1], _presaleState);
+            assert.isTrue(isOnPresaleList);
+        });
+
+        it('presaleMint should mint when ETH sent is equal to CERO_PRICE', async () => {
+            const account = accounts[7];
+            const result = await contract.setStateToPresale();
+            const eventStateUpdated = result.logs[0].args;
+            const isOnPresaleList = await contract.isOnPresaleList(account);
+            const currentMintPrice = web3.utils.toWei(_updateMintPrice, "ether");
+            const currentBalance = await contract.balanceOf(account);
+            await contract.presaleMint({from: account, value: currentMintPrice});
+            const newBalance = await contract.balanceOf(account);
+            assert.equal(eventStateUpdated[1], _presaleState);
+            assert.isTrue(isOnPresaleList);
+            assert.isTrue(currentBalance < newBalance);
+        });
+
+        it('presaleMint should mint when ETH sent is greater than CERO_PRICE', async () => {
+            const account = accounts[7];
+            const result = await contract.setStateToPresale();
+            const eventStateUpdated = result.logs[0].args;
+            const isOnPresaleList = await contract.isOnPresaleList(account);
+            const currentMintPrice = web3.utils.toWei(_updateMintPrice, "ether");
+            const greaterMintPrice = parseInt(currentMintPrice) + 100;
+            const currentBalance = await contract.balanceOf(account);
+            await contract.presaleMint({from: account, value: greaterMintPrice});
+            const newBalance = await contract.balanceOf(account);
+            assert.equal(eventStateUpdated[1], _presaleState);
+            assert.isTrue(isOnPresaleList);
+            assert.isTrue(currentBalance < newBalance);
+        });
+
+        /*
+
+
+        it('presaleMint is\'n available on Presale state', async () => {
+            const account = accounts[1];
+            const result = await contract.setStateToPresale();
+            const eventStateUpdated = result.logs[0].args;
+
+            await contract.addAirdrop([account], _qunatityAirdrop);
+            await contract.claimAirdrop({from: account});
+
+            assert.equal(eventStateUpdated[1], _presaleState);
+        });
+
+        */
     });
 
 });
