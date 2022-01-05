@@ -207,9 +207,3 @@ contract Cero is ERC721, ERC721URIStorage, Ownable {
         return super.supportsInterface(interfaceId);
     }
 }
-
-//- whitelist sale
-//- nft on stored on blockchain
-//- minting for founder
-//- public sale
-//- minting for airdrop (specific number of nft)
